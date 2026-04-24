@@ -1,12 +1,78 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'role_selection.dart';
+import 'borrower_profile.dart';
+import 'borrower_data.dart';
 
-class SplashScreen extends StatelessWidget {
+class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
+
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _checkLoginStatus();
+  }
+
+  Future<void> _checkLoginStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    final isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+    final userRole = prefs.getString('userRole');
+
+    await Future.delayed(const Duration(seconds: 2)); // Splash delay
+
+    if (mounted) {
+      if (isLoggedIn) {
+        if (userRole == 'borrower') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => BorrowerProfileScreen(
+                borrower: BorrowerData(
+                  fullName: prefs.getString('userName') ?? 'Borrower',
+                  cnic: '42201-1234567-8',
+                  city: 'Karachi',
+                  employmentType: 'Salaried',
+                  annualIncome: 1450000,
+                  monthlyObligations: 22000,
+                  homeOwnership: 'Rented',
+                  employmentLength: 4,
+                  creditScore: 720,
+                  loanAmount: 320000,
+                  loanPurpose: 'Home repairs',
+                  loanTerm: 24,
+                ),
+              ),
+            ),
+          );
+        } else if (userRole == 'lender') {
+          Navigator.pushReplacementNamed(context, '/lender');
+        } else {
+          // Logged in but no role selected, go to role selection
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => RoleSelectionScreen(
+                userName: prefs.getString('userName') ?? '',
+              ),
+            ),
+          );
+        }
+      } else {
+        // Not logged in, go to login
+        Navigator.pushReplacementNamed(context, '/login');
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFF1E3A8A),
+      backgroundColor: const Color(0xFF1E3A8A),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

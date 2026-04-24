@@ -4,16 +4,31 @@ import 'login.dart';
 import 'signup.dart';
 import 'borrower_dashboard.dart';
 import 'borrower_home.dart';
+import 'borrower_profile.dart';
 import 'missing_info.dart';
 import 'loan_detail.dart';
 import 'borrower_data.dart';
 import 'ai_result.dart';
-import 'personal_info.dart'; // borrower info form
-import 'settings_screen.dart';
+import 'personal_info.dart';
 import 'otp_screen.dart';
 import 'theme.dart';
 import 'lender_dashboard.dart';
-import 'lender_infoform.dart'; // ✅ new lender info form
+import 'lender_infoform.dart';
+
+final _defaultBorrower = BorrowerData(
+  fullName: 'Amina Khan',
+  cnic: '42201-1234567-8',
+  city: 'Karachi',
+  employmentType: 'Salaried',
+  annualIncome: 1450000,
+  monthlyObligations: 22000,
+  homeOwnership: 'Rented',
+  employmentLength: 4,
+  creditScore: 720,
+  loanAmount: 320000,
+  loanPurpose: 'Home repairs',
+  loanTerm: 24,
+);
 
 void main() {
   runApp(const P2PLendingApp());
@@ -27,51 +42,25 @@ class P2PLendingApp extends StatefulWidget {
 }
 
 class _P2PLendingAppState extends State<P2PLendingApp> {
-  bool _darkMode = false;
-  bool _notificationsEnabled = true;
-  bool _biometricLogin = false;
-  String _language = "English";
-
-  void _toggleTheme(bool enabled) => setState(() => _darkMode = enabled);
-  void _toggleNotifications(bool enabled) =>
-      setState(() => _notificationsEnabled = enabled);
-  void _toggleBiometric(bool enabled) =>
-      setState(() => _biometricLogin = enabled);
-  void _changeLanguage(String lang) => setState(() => _language = lang);
-  void _changePassword() {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text("Password change triggered")));
-  }
+  // ❌ Removed all settings-related state variables
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'P2P Lending App',
-      theme: _darkMode ? ThemeData.dark() : darkBlueTheme,
+      theme: darkBlueTheme, // ✅ fixed theme (no toggle)
       debugShowCheckedModeBanner: false,
       initialRoute: '/',
       routes: {
         '/': (context) => SplashScreen(),
         '/login': (context) => LoginScreen(),
         '/signup': (context) => const SignupScreen(),
-        '/borrower': (context) => BorrowerScreen(),
+        '/borrower': (context) =>
+            BorrowerProfileScreen(borrower: _defaultBorrower),
 
-        // ✅ Lender role goes to lender info form (like borrower)
         '/lender': (context) => const LenderInfoFormScreen(),
 
         '/personalInfo': (context) => const PersonalInfoScreen(),
-        '/settings': (context) => SettingsScreen(
-          onThemeChanged: _toggleTheme,
-          onNotificationsChanged: _toggleNotifications,
-          onBiometricChanged: _toggleBiometric,
-          onLanguageChanged: _changeLanguage,
-          onPasswordChanged: _changePassword,
-          darkMode: _darkMode,
-          notificationsEnabled: _notificationsEnabled,
-          biometricLogin: _biometricLogin,
-          language: _language,
-        ),
       },
       onGenerateRoute: (settings) {
         switch (settings.name) {

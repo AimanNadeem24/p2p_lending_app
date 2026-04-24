@@ -53,9 +53,14 @@ class _LoanRequestScreenState extends State<LoanRequestScreen> {
                   TextFormField(
                     controller: _amountController,
                     decoration: InputDecoration(
-                      labelText: "Loan Amount (PKR)",
+                      labelText: "Loan Amount (PKR)", // ✅ updated
+                      prefixText: "PKR ", // ✅ shows PKR instead of $
+                      prefixStyle: const TextStyle(
+                        color: Color(0xFF1E3A8A),
+                        fontWeight: FontWeight.bold,
+                      ),
                       prefixIcon: const Icon(
-                        Icons.attach_money,
+                        Icons.money, // ✅ changed icon (no $ sign)
                         color: Color(0xFF1E3A8A),
                       ),
                       border: OutlineInputBorder(

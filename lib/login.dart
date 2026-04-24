@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'role_selection.dart'; // ✅ Import RoleSelectionScreen
 
 class LoginScreen extends StatefulWidget {
@@ -76,17 +77,22 @@ class _LoginScreenState extends State<LoginScreen> {
 
               // ✅ Sign In button
               ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   if (_formKey.currentState!.validate()) {
+                    final prefs = await SharedPreferences.getInstance();
+                    await prefs.setBool('isLoggedIn', true);
+                    await prefs.setString('userName', _nameController.text);
                     // For now, just navigate to RoleSelectionScreen
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => RoleSelectionScreen(
-                          userName: _nameController.text, // pass full name
+                    if (context.mounted) {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => RoleSelectionScreen(
+                            userName: _nameController.text, // pass full name
+                          ),
                         ),
-                      ),
-                    );
+                      );
+                    }
                   }
                 },
                 child: const Text("Sign In"),

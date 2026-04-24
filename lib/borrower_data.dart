@@ -27,17 +27,33 @@ class BorrowerData {
     required this.loanTerm,
   });
 
-  copyWith({
-    required String fullName,
-    required String cnic,
-    required String city,
-    required String employmentType,
-    required int annualIncome,
-    required int monthlyObligations,
-    required int employmentLength,
-    required int creditScore,
-    required int loanAmount,
-    required String loanPurpose,
-    required int loanTerm,
-  }) {}
+  BorrowerData copyWith({
+    String? fullName,
+    String? cnic,
+    String? city,
+    String? employmentType,
+    int? annualIncome,
+    int? monthlyObligations,
+    String? homeOwnership,
+    int? employmentLength,
+    int? creditScore,
+    int? loanAmount,
+    String? loanPurpose,
+    int? loanTerm,
+  }) {
+    return BorrowerData(
+      fullName: fullName ?? this.fullName,
+      cnic: cnic ?? this.cnic,
+      city: city ?? this.city,
+      employmentType: employmentType ?? this.employmentType,
+      annualIncome: annualIncome ?? this.annualIncome,
+      monthlyObligations: monthlyObligations ?? this.monthlyObligations,
+      homeOwnership: homeOwnership ?? this.homeOwnership,
+      employmentLength: employmentLength ?? this.employmentLength,
+      creditScore: creditScore ?? this.creditScore,
+      loanAmount: loanAmount ?? this.loanAmount,
+      loanPurpose: loanPurpose ?? this.loanPurpose,
+      loanTerm: loanTerm ?? this.loanTerm,
+    );
+  }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'borrower_dashboard.dart';
-// ✅ Make sure this file exists and contains BorrowerScreen
+import 'package:shared_preferences/shared_preferences.dart';
+import 'borrower_profile.dart';
+import 'borrower_data.dart';
 
 class RoleSelectionScreen extends StatelessWidget {
   final String userName;
@@ -10,7 +11,7 @@ class RoleSelectionScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFF1E3A8A),
+      backgroundColor: const Color(0xFF1E3A8A),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -27,7 +28,7 @@ class RoleSelectionScreen extends StatelessWidget {
             ),
             const SizedBox(height: 40),
 
-            // Borrower button → BorrowerScreen
+            // Borrower button → final borrower profile screen
             OutlinedButton(
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(
@@ -39,11 +40,31 @@ class RoleSelectionScreen extends StatelessWidget {
                   vertical: 20,
                 ),
               ),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => BorrowerScreen()),
-                );
+              onPressed: () async {
+                await _setLoginState('borrower');
+                if (context.mounted) {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => BorrowerProfileScreen(
+                        borrower: BorrowerData(
+                          fullName: userName,
+                          cnic: '42201-1234567-8',
+                          city: 'Karachi',
+                          employmentType: 'Salaried',
+                          annualIncome: 1450000,
+                          monthlyObligations: 22000,
+                          homeOwnership: 'Rented',
+                          employmentLength: 4,
+                          creditScore: 720,
+                          loanAmount: 320000,
+                          loanPurpose: 'Home repairs',
+                          loanTerm: 24,
+                        ),
+                      ),
+                    ),
+                  );
+                }
               },
               child: const Text(
                 "💰 Borrower",
@@ -69,7 +90,12 @@ class RoleSelectionScreen extends StatelessWidget {
                   vertical: 20,
                 ),
               ),
-              onPressed: () => Navigator.pushNamed(context, '/lender'),
+              onPressed: () async {
+                await _setLoginState('lender');
+                if (context.mounted) {
+                  Navigator.pushReplacementNamed(context, '/lender');
+                }
+              },
               child: const Text(
                 "📈 Lender",
                 style: TextStyle(
@@ -83,5 +109,11 @@ class RoleSelectionScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _setLoginState(String role) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isLoggedIn', true);
+    await prefs.setString('userRole', role);
   }
 }

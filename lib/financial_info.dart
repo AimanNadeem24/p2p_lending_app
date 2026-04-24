@@ -54,11 +54,13 @@ class _FinancialInfoScreenState extends State<FinancialInfoScreen> {
                   TextFormField(
                     controller: _incomeController,
                     decoration: InputDecoration(
-                      labelText: "Annual Income (PKR)",
-                      prefixIcon: const Icon(
-                        Icons.attach_money,
+                      labelText: "Annual Income (PKR)", // ✅ updated
+                      prefixText: "PKR ", // ✅ shows PKR instead of $
+                      prefixStyle: const TextStyle(
                         color: Color(0xFF1E3A8A),
+                        fontWeight: FontWeight.bold,
                       ),
+
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -80,6 +82,11 @@ class _FinancialInfoScreenState extends State<FinancialInfoScreen> {
                     controller: _obligationsController,
                     decoration: InputDecoration(
                       labelText: "Monthly Obligations (PKR)",
+
+                      prefixStyle: const TextStyle(
+                        color: Color(0xFF1E3A8A),
+                        fontWeight: FontWeight.bold,
+                      ),
                       prefixIcon: const Icon(
                         Icons.money_off,
                         color: Color(0xFF1E3A8A),

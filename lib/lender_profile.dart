@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LenderProfileScreen extends StatefulWidget {
   final String name;
@@ -114,11 +115,9 @@ class _LenderProfileScreenState extends State<LenderProfileScreen> {
       ),
     );
     if (ok == true && mounted) {
-      // TODO: FirebaseAuth.instance.signOut();
-      // Navigator.pushNamedAndRemoveUntil(context, '/login', (_) => false);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Signed out')));
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.clear();
+      Navigator.pushNamedAndRemoveUntil(context, '/login', (_) => false);
     }
   }
 
