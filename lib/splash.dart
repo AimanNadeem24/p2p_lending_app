@@ -34,8 +34,8 @@ class _SplashScreenState extends State<SplashScreen> {
               builder: (context) => BorrowerProfileScreen(
                 borrower: BorrowerData(
                   fullName: prefs.getString('userName') ?? 'Borrower',
-                  cnic: '42201-1234567-8',
-                  city: 'Karachi',
+                  cnic: '54400-3187242-0',
+                  city: 'Quetta',
                   employmentType: 'Salaried',
                   annualIncome: 1450000,
                   monthlyObligations: 22000,

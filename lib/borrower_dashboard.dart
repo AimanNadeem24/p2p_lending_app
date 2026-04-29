@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'personal_info.dart';
 
 class BorrowerScreen extends StatelessWidget {
-  const BorrowerScreen({super.key});
+   const BorrowerScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

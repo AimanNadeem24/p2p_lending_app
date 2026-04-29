@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'borrower_data.dart';
 
 class BorrowerProfileScreen extends StatefulWidget {
@@ -181,6 +182,22 @@ class _BorrowerProfileScreenState extends State<BorrowerProfileScreen> {
     }
   }
 
+  Future<void> _doSignOut() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    // ✅ Prototype-friendly logout: clears any saved login/session keys
+    await prefs.clear();
+
+    if (!mounted) return;
+
+    // ✅ Close the dialog first
+    Navigator.of(context).pop();
+
+    // ✅ Navigate to login/welcome and remove previous screens
+    // IMPORTANT: If your app uses a different route, change "/" to it (e.g. "/login")
+    Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+  }
+
   void _confirmSignOut() {
     showDialog(
       context: context,
@@ -197,7 +214,7 @@ class _BorrowerProfileScreenState extends State<BorrowerProfileScreen> {
             child: Text('Cancel', style: _ts(13, FontWeight.w500, _primary)),
           ),
           TextButton(
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: _doSignOut,
             child: Text('Sign Out', style: _ts(13, FontWeight.w600, _error)),
           ),
         ],
@@ -328,7 +345,7 @@ class _BorrowerProfileScreenState extends State<BorrowerProfileScreen> {
                         )
                       : Text(
                           '${_cityController.text}  ·  '
-                          '${_selectedEmploymentType}',
+                          '$_selectedEmploymentType',
                           textAlign: TextAlign.center,
                           style: _ts(11, FontWeight.w400, Colors.white70),
                         ),
@@ -437,8 +454,8 @@ class _BorrowerProfileScreenState extends State<BorrowerProfileScreen> {
                                         backgroundColor: Colors.transparent,
                                         valueColor:
                                             AlwaysStoppedAnimation<Color>(
-                                              _creditColor,
-                                            ),
+                                          _creditColor,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -454,7 +471,6 @@ class _BorrowerProfileScreenState extends State<BorrowerProfileScreen> {
                   const SizedBox(height: 22),
 
                   // ── FINANCIAL SUMMARY ────────────────────
-                  // ── FINANCIAL SUMMARY ────────────────────
                   _Label('Financial Summary'),
                   const SizedBox(height: 10),
                   Container(
@@ -468,14 +484,12 @@ class _BorrowerProfileScreenState extends State<BorrowerProfileScreen> {
                       vertical: 14,
                     ),
                     child: GridView.count(
-                      crossAxisCount: 2, // two boxes side by side
-                      shrinkWrap: true, // let GridView size itself
-                      physics:
-                          const NeverScrollableScrollPhysics(), // avoid scroll conflict
+                      crossAxisCount: 2,
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
                       crossAxisSpacing: 12,
                       mainAxisSpacing: 10,
-                      childAspectRatio:
-                          2.2, // reduced from 2.8 to prevent overflow
+                      childAspectRatio: 2.2,
                       children: [
                         _SummaryCell(
                           'PKR ${_incomeController.text}',
@@ -501,7 +515,6 @@ class _BorrowerProfileScreenState extends State<BorrowerProfileScreen> {
                     ),
                   ),
 
-                  // ── PERSONAL INFORMATION ─────────────────
                   _Label('Personal Information'),
                   const SizedBox(height: 10),
 
@@ -550,7 +563,6 @@ class _BorrowerProfileScreenState extends State<BorrowerProfileScreen> {
 
                   const SizedBox(height: 22),
 
-                  // ── EMPLOYMENT ───────────────────────────
                   _Label('Employment & Income'),
                   const SizedBox(height: 10),
 
@@ -656,7 +668,6 @@ class _BorrowerProfileScreenState extends State<BorrowerProfileScreen> {
 
                   const SizedBox(height: 22),
 
-                  // ── LOAN DETAILS ─────────────────────────
                   _Label('Loan Details'),
                   const SizedBox(height: 10),
 
@@ -714,7 +725,6 @@ class _BorrowerProfileScreenState extends State<BorrowerProfileScreen> {
 
                   const SizedBox(height: 22),
 
-                  // ── PREFERENCES ──────────────────────────
                   _Label('Preferences'),
                   const SizedBox(height: 10),
                   Container(
@@ -763,7 +773,6 @@ class _BorrowerProfileScreenState extends State<BorrowerProfileScreen> {
 
                   const SizedBox(height: 22),
 
-                  // ── SUPPORT ──────────────────────────────
                   _Label('Support'),
                   const SizedBox(height: 10),
 
@@ -837,7 +846,6 @@ class _BorrowerProfileScreenState extends State<BorrowerProfileScreen> {
 
                   const SizedBox(height: 28),
 
-                  // ── Footer ───────────────────────────────
                   Center(
                     child: Column(
                       children: [
@@ -867,7 +875,6 @@ class _BorrowerProfileScreenState extends State<BorrowerProfileScreen> {
 // HELPER WIDGETS
 // ════════════════════════════════════════════════════════════════
 
-// Semi-transparent icon button for the header
 class _IconBtn extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
@@ -875,20 +882,19 @@ class _IconBtn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => GestureDetector(
-    onTap: onTap,
-    child: Container(
-      width: 38,
-      height: 38,
-      decoration: BoxDecoration(
-        color: Colors.white12,
-        borderRadius: BorderRadius.circular(11),
-      ),
-      child: Icon(icon, color: Colors.white, size: 18),
-    ),
-  );
+        onTap: onTap,
+        child: Container(
+          width: 38,
+          height: 38,
+          decoration: BoxDecoration(
+            color: Colors.white12,
+            borderRadius: BorderRadius.circular(11),
+          ),
+          child: Icon(icon, color: Colors.white, size: 18),
+        ),
+      );
 }
 
-// Text field styled for the dark header
 class _HeaderField extends StatelessWidget {
   final TextEditingController controller;
   final String hint;
@@ -901,38 +907,38 @@ class _HeaderField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-    margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 24),
-    height: 38,
-    decoration: BoxDecoration(
-      color: Colors.white12,
-      borderRadius: BorderRadius.circular(10),
-    ),
-    child: TextField(
-      controller: controller,
-      keyboardType: keyboard,
-      textAlign: TextAlign.center,
-      style: const TextStyle(
-        fontFamily: 'Poppins',
-        fontSize: 13,
-        fontWeight: FontWeight.w400,
-        color: Colors.white,
-      ),
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: const TextStyle(
-          fontFamily: 'Poppins',
-          fontSize: 13,
-          fontWeight: FontWeight.w400,
-          color: Colors.white54,
+        margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 24),
+        height: 38,
+        decoration: BoxDecoration(
+          color: Colors.white12,
+          borderRadius: BorderRadius.circular(10),
         ),
-        border: InputBorder.none,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      ),
-    ),
-  );
+        child: TextField(
+          controller: controller,
+          keyboardType: keyboard,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            fontFamily: 'Poppins',
+            fontSize: 13,
+            fontWeight: FontWeight.w400,
+            color: Colors.white,
+          ),
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: const TextStyle(
+              fontFamily: 'Poppins',
+              fontSize: 13,
+              fontWeight: FontWeight.w400,
+              color: Colors.white54,
+            ),
+            border: InputBorder.none,
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          ),
+        ),
+      );
 }
 
-// White pill badge in the header
 class _WhitePill extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -940,49 +946,47 @@ class _WhitePill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-    decoration: BoxDecoration(
-      color: Colors.white70,
-      borderRadius: BorderRadius.circular(20),
-    ),
-    child: Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, color: Colors.white, size: 12),
-        const SizedBox(width: 5),
-        Text(
-          label,
-          style: const TextStyle(
-            fontFamily: 'Poppins',
-            fontSize: 10,
-            fontWeight: FontWeight.w500,
-            color: Colors.white,
-          ),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: Colors.white70,
+          borderRadius: BorderRadius.circular(20),
         ),
-      ],
-    ),
-  );
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: Colors.white, size: 12),
+            const SizedBox(width: 5),
+            Text(
+              label,
+              style: const TextStyle(
+                fontFamily: 'Poppins',
+                fontSize: 10,
+                fontWeight: FontWeight.w500,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      );
 }
 
-// Section label
 class _Label extends StatelessWidget {
   final String text;
   const _Label(this.text);
 
   @override
   Widget build(BuildContext context) => Text(
-    text.toUpperCase(),
-    style: const TextStyle(
-      fontFamily: 'Poppins',
-      fontSize: 10,
-      fontWeight: FontWeight.w600,
-      color: Color(0xFF94A3B8),
-      letterSpacing: 0.6,
-    ),
-  );
+        text.toUpperCase(),
+        style: const TextStyle(
+          fontFamily: 'Poppins',
+          fontSize: 10,
+          fontWeight: FontWeight.w600,
+          color: Color(0xFF94A3B8),
+          letterSpacing: 0.6,
+        ),
+      );
 }
 
-// Summary cell (value + label, coloured value)
 class _SummaryCell extends StatelessWidget {
   final String value, label;
   final Color color;
@@ -990,67 +994,32 @@ class _SummaryCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    mainAxisAlignment: MainAxisAlignment.center,
-    children: [
-      Text(
-        value,
-        style: TextStyle(
-          fontFamily: 'Poppins',
-          fontSize: 15,
-          fontWeight: FontWeight.w700,
-          color: color,
-        ),
-      ),
-      const SizedBox(height: 2),
-      const Text(
-        '',
-        style: TextStyle(
-          fontFamily: 'Poppins',
-          fontSize: 10,
-          fontWeight: FontWeight.w400,
-          color: Color(0xFF64748B),
-        ),
-      ),
-      Text(
-        label,
-        style: const TextStyle(
-          fontFamily: 'Poppins',
-          fontSize: 10,
-          fontWeight: FontWeight.w400,
-          color: Color(0xFF64748B),
-        ),
-      ),
-    ],
-  );
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            value,
+            style: TextStyle(
+              fontFamily: 'Poppins',
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: color,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: const TextStyle(
+              fontFamily: 'Poppins',
+              fontSize: 10,
+              fontWeight: FontWeight.w400,
+              color: Color(0xFF64748B),
+            ),
+          ),
+        ],
+      );
 }
 
-// Badge for status
-class _Badge extends StatelessWidget {
-  final String label;
-  final Color bg, fg;
-  const _Badge({required this.label, required this.bg, required this.fg});
-
-  @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-    decoration: BoxDecoration(
-      color: bg,
-      borderRadius: BorderRadius.circular(6),
-    ),
-    child: Text(
-      label,
-      style: TextStyle(
-        fontFamily: 'Poppins',
-        fontSize: 10,
-        fontWeight: FontWeight.w600,
-        color: fg,
-      ),
-    ),
-  );
-}
-
-// Account / Support list tile
 class _Tile extends StatelessWidget {
   final Color iconBg, iconColor;
   final IconData icon;
@@ -1070,70 +1039,66 @@ class _Tile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => GestureDetector(
-    onTap: onTap,
-    child: Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE2E8F0), width: 0.5),
-      ),
-      child: Row(
-        children: [
-          // icon box
-          Container(
-            width: 38,
-            height: 38,
-            decoration: BoxDecoration(
-              color: iconBg,
-              borderRadius: BorderRadius.circular(11),
-            ),
-            child: Icon(icon, color: iconColor, size: 18),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: const Color(0xFFE2E8F0), width: 0.5),
           ),
-          const SizedBox(width: 12),
-          // text
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontFamily: 'Poppins',
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                    color: Color(0xFF1E293B),
-                  ),
+          child: Row(
+            children: [
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: iconBg,
+                  borderRadius: BorderRadius.circular(11),
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  style: const TextStyle(
-                    fontFamily: 'Poppins',
-                    fontSize: 11,
-                    fontWeight: FontWeight.w400,
-                    color: Color(0xFF64748B),
-                  ),
+                child: Icon(icon, color: iconColor, size: 18),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: Color(0xFF1E293B),
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 11,
+                        fontWeight: FontWeight.w400,
+                        color: Color(0xFF64748B),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+              if (badge != null)
+                badge!
+              else
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  color: Color(0xFF94A3B8),
+                  size: 18,
+                ),
+            ],
           ),
-          // badge or chevron
-          if (badge != null)
-            badge!
-          else
-            const Icon(
-              Icons.chevron_right_rounded,
-              color: Color(0xFF94A3B8),
-              size: 18,
-            ),
-        ],
-      ),
-    ),
-  );
+        ),
+      );
 }
 
-// Preference toggle row
 class _ToggleRow extends StatelessWidget {
   final Color iconBg, iconColor;
   final IconData icon;
@@ -1154,74 +1119,73 @@ class _ToggleRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Column(
-    children: [
-      Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-        child: Row(
-          children: [
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: iconBg,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(icon, color: iconColor, size: 17),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontFamily: 'Poppins',
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFF1E293B),
-                    ),
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+            child: Row(
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: iconBg,
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  const SizedBox(height: 1),
-                  Text(
-                    subtitle,
-                    style: const TextStyle(
-                      fontFamily: 'Poppins',
-                      fontSize: 11,
-                      fontWeight: FontWeight.w400,
-                      color: Color(0xFF64748B),
-                    ),
+                  child: Icon(icon, color: iconColor, size: 17),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontFamily: 'Poppins',
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFF1E293B),
+                        ),
+                      ),
+                      const SizedBox(height: 1),
+                      Text(
+                        subtitle,
+                        style: const TextStyle(
+                          fontFamily: 'Poppins',
+                          fontSize: 11,
+                          fontWeight: FontWeight.w400,
+                          color: Color(0xFF64748B),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+                Transform.scale(
+                  scale: 0.85,
+                  child: Switch.adaptive(
+                    value: value,
+                    onChanged: onChanged,
+                    activeColor: Colors.white,
+                    activeTrackColor: const Color(0xFF1E3A8A),
+                    inactiveThumbColor: Colors.white,
+                    inactiveTrackColor: const Color(0xFFE2E8F0),
+                  ),
+                ),
+              ],
             ),
-            Transform.scale(
-              scale: 0.85,
-              child: Switch.adaptive(
-                value: value,
-                onChanged: onChanged,
-                activeColor: Colors.white,
-                activeTrackColor: const Color(0xFF1E3A8A),
-                inactiveThumbColor: Colors.white,
-                inactiveTrackColor: const Color(0xFFE2E8F0),
-              ),
+          ),
+          if (divider)
+            const Divider(
+              height: 1,
+              thickness: 0.5,
+              color: Color(0xFFE2E8F0),
+              indent: 62,
+              endIndent: 14,
             ),
-          ],
-        ),
-      ),
-      if (divider)
-        const Divider(
-          height: 1,
-          thickness: 0.5,
-          color: Color(0xFFE2E8F0),
-          indent: 62,
-          endIndent: 14,
-        ),
-    ],
-  );
+        ],
+      );
 }
 
-// Editable field widget
 class _EditableField extends StatelessWidget {
   final String label;
   final TextEditingController controller;
@@ -1237,36 +1201,36 @@ class _EditableField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(bottom: 8),
-    child: Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE2E8F0), width: 0.5),
-      ),
-      child: TextField(
-        controller: controller,
-        keyboardType: keyboard,
-        maxLines: maxLines,
-        decoration: InputDecoration(
-          labelText: label,
-          labelStyle: const TextStyle(
-            fontFamily: 'Poppins',
-            fontSize: 12,
-            fontWeight: FontWeight.w400,
-            color: Color(0xFF94A3B8),
+        padding: const EdgeInsets.only(bottom: 8),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: const Color(0xFFE2E8F0), width: 0.5),
           ),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(vertical: 12),
+          child: TextField(
+            controller: controller,
+            keyboardType: keyboard,
+            maxLines: maxLines,
+            decoration: InputDecoration(
+              labelText: label,
+              labelStyle: const TextStyle(
+                fontFamily: 'Poppins',
+                fontSize: 12,
+                fontWeight: FontWeight.w400,
+                color: Color(0xFF94A3B8),
+              ),
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(vertical: 12),
+            ),
+            style: const TextStyle(
+              fontFamily: 'Poppins',
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: Color(0xFF1E293B),
+            ),
+          ),
         ),
-        style: const TextStyle(
-          fontFamily: 'Poppins',
-          fontSize: 13,
-          fontWeight: FontWeight.w500,
-          color: Color(0xFF1E293B),
-        ),
-      ),
-    ),
-  );
+      );
 }

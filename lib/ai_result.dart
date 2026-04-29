@@ -1,201 +1,231 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'borrower_data.dart';
+import 'package:http/http.dart' as http;
 
-class AIResultScreen extends StatelessWidget {
+import 'borrower_data.dart';
+import 'borrower_dashboard.dart';
+import 'lender_dashboard.dart';
+import 'borrower_home.dart';
+
+class AIResultScreen extends StatefulWidget {
   final BorrowerData data;
 
   const AIResultScreen({super.key, required this.data});
 
-  Map<String, dynamic> _calculateResults() {
-    final loanTerm = data.loanTerm == 0 ? 1 : data.loanTerm;
+  @override
+  State<AIResultScreen> createState() => _AIResultScreenState();
+}
 
-    double riskScore = (data.creditScore / 850) * 100;
-    riskScore = riskScore.clamp(0, 100);
+class _AIResultScreenState extends State<AIResultScreen> {
+  late Future<Map<String, dynamic>> _future;
 
-    double interestRate = 20 - (riskScore / 10);
-    if (interestRate < 5) interestRate = 5;
+  @override
+  void initState() {
+    super.initState();
+    _future = _fetchResults();
+  }
 
-    double monthlyInstallment =
-        (data.loanAmount * (1 + (interestRate / 100))) / loanTerm;
+  Future<Map<String, dynamic>> _fetchResults() async {
+    // IMPORTANT: replace with your laptop IP on hotspot/Wi‑Fi
+    final url = Uri.parse('http://127.0.0.1:8000/predict');
 
-    String grade;
-    if (riskScore >= 80) {
-      grade = "A1";
-    } else if (riskScore >= 70) {
-      grade = "B2";
-    } else if (riskScore >= 60) {
-      grade = "C1";
-    } else {
-      grade = "D";
-    }
-
-    double defaultProbability = 100 - riskScore;
-
-    String riskCategory;
-    if (riskScore >= 70) {
-      riskCategory = "Low Risk";
-    } else if (riskScore >= 50) {
-      riskCategory = "Medium Risk";
-    } else {
-      riskCategory = "High Risk";
-    }
-
-    return {
-      "riskScore": riskScore.round(),
-      "riskCategory": riskCategory,
-      "interestRate": interestRate.toStringAsFixed(1),
-      "monthlyInstallment": monthlyInstallment.round(),
-      "loanGrade": grade,
-      "defaultProbability": defaultProbability.round(),
+    final payload = {
+      "loanAmount": widget.data.loanAmount,
+      "loanTerm": widget.data.loanTerm,
+      "creditScore": widget.data.creditScore,
+      "annualIncome": widget.data.annualIncome,
+      "dti": _calcDtiPercent(
+        monthlyObligations: widget.data.monthlyObligations,
+        annualIncome: widget.data.annualIncome,
+      ),
+      "description": (widget.data.loanPurpose ?? "").toString(),
+      "homeOwnership": (widget.data.homeOwnership ?? "RENT").toString(),
+      "purpose": (widget.data.loanPurpose ?? "other").toString(),
     };
+
+    final response = await http.post(
+      url,
+      headers: {"Content-Type": "application/json", "accept": "application/json"},
+      body: jsonEncode(payload),
+    );
+
+    if (response.statusCode == 200) {
+      final decoded = jsonDecode(response.body);
+      if (decoded is Map<String, dynamic>) return decoded;
+      throw Exception("API did not return a JSON object");
+    }
+
+    throw Exception("Backend error ${response.statusCode}: ${response.body}");
+  }
+
+  static double _calcDtiPercent({
+    required dynamic monthlyObligations,
+    required dynamic annualIncome,
+  }) {
+    final mo = double.tryParse(monthlyObligations.toString()) ?? 0.0;
+    final ai = double.tryParse(annualIncome.toString()) ?? 0.0;
+    final monthlyIncome = ai / 12.0;
+    if (monthlyIncome <= 0) return 0.0;
+    return (mo / monthlyIncome) * 100.0;
+  }
+
+  Color _categoryColor(String category) {
+    final c = category.toLowerCase();
+    if (c.contains("low")) return Colors.green;
+    if (c.contains("medium")) return Colors.orange;
+    if (c.contains("high")) return Colors.red;
+    return Colors.blueGrey;
+  }
+
+  String _decisionText(int defaultProbability) {
+    if (defaultProbability < 20) return "Decision: Approve (Recommended)";
+    if (defaultProbability < 50) return "Decision: Manual Review";
+    return "Decision: High Risk / Reject";
   }
 
   @override
   Widget build(BuildContext context) {
-    final results = _calculateResults();
-
     return Scaffold(
-      backgroundColor: Colors.white, // ✅ white background
-      appBar: AppBar(
-        title: const Text("AI Default Risk Score"),
-        backgroundColor: const Color(0xFF1E3A8A), // dark blue
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            // Circular score
-            CircleAvatar(
-              radius: 60,
-              backgroundColor: const Color(0xFF1E3A8A),
-              child: Text(
-                "${results['riskScore']}",
-                style: const TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+      appBar: AppBar(title: const Text("AI Result")),
+      body: FutureBuilder<Map<String, dynamic>>(
+        future: _future,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (snapshot.hasError) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  "Failed to connect to AI backend.\n\n${snapshot.error}\n\n"
+                  "Make sure:\n"
+                  "1) FastAPI is running\n"
+                  "2) Phone + laptop are on same Wi‑Fi / hotspot\n"
+                  "3) You used laptop IP (not 127.0.0.1)\n"
+                  "4) Firewall allowed port 8000",
                 ),
               ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              results['riskCategory'],
-              style: const TextStyle(
-                fontSize: 18,
-                color: Color(0xFF1E3A8A),
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 24),
+            );
+          }
 
-            // Loan grade card
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.blue.shade50,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.blue.shade200),
-              ),
-              child: Text(
-                "Loan grade: ${results['loanGrade']}",
-                style: const TextStyle(
-                  fontSize: 18,
-                  color: Color(0xFF1E3A8A),
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
+          final res = snapshot.data ?? {};
 
-            // Default probability progress bar
-            LinearProgressIndicator(
-              value: results['defaultProbability'] / 100,
-              minHeight: 12,
-              backgroundColor: Colors.grey.shade300,
-              color: Colors.blue.shade700,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              "Default probability: ${results['defaultProbability']}%",
-              style: const TextStyle(color: Color(0xFF1E3A8A), fontSize: 14),
-            ),
+          final int riskScore = res["riskScore"] is int
+              ? res["riskScore"]
+              : int.tryParse(res["riskScore"]?.toString() ?? "") ?? 0;
 
-            const SizedBox(height: 24),
+          final String riskCategory =
+              (res["riskCategory"] ?? "Unknown").toString();
 
-            // Other details
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Suggested Interest Rate:         ${results['interestRate']}% p.a.",
-                    style: const TextStyle(
-                      color: Color(0xFF1E3A8A),
-                      fontSize: 14,
+          final int defaultProbability = res["defaultProbability"] is int
+              ? res["defaultProbability"]
+              : int.tryParse(res["defaultProbability"]?.toString() ?? "") ?? 0;
+
+          final color = _categoryColor(riskCategory);
+
+          return Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Card(
+                  child: ListTile(
+                    title: const Text("Risk Category"),
+                    subtitle: Text(
+                      riskCategory,
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: color,
+                      ),
                     ),
                   ),
-                  Text(
-                    "Monthly Installment:                PKR ${results['monthlyInstallment']}",
-                    style: const TextStyle(
-                      color: Color(0xFF1E3A8A),
-                      fontSize: 14,
+                ),
+                const SizedBox(height: 10),
+                Card(
+                  child: ListTile(
+                    title: const Text("Risk Score"),
+                    subtitle: Text(
+                      "$riskScore / 100",
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
-                ],
-              ),
-            ),
-
-            const Spacer(),
-
-            // Buttons
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF1E3A8A),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+                ),
+                const SizedBox(height: 10),
+                Card(
+                  child: ListTile(
+                    title: const Text("Default Probability"),
+                    subtitle: Text(
+                      "$defaultProbability%",
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                 ),
-                onPressed: () {
-                  Navigator.pushNamed(
-                    context,
-                    '/borrowerHome',
-                    arguments: data,
-                  );
-                },
-                child: const Text(
-                  "Accept & List Loan",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue.shade100,
-                  foregroundColor: const Color(0xFF1E3A8A),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+                const SizedBox(height: 10),
+                Card(
+                  child: ListTile(
+                    title: const Text("System Suggestion"),
+                    subtitle: Text(
+                      _decisionText(defaultProbability),
+                      style: const TextStyle(fontSize: 18),
+                    ),
                   ),
                 ),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: const Text(
-                  "Re-apply with changes",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                const Spacer(),
+
+                ElevatedButton(
+                  onPressed: () async {
+                    try {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => BorrowerHome(borrower: widget.data)),
+                      );
+                    } catch (e) {
+                      if (!context.mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("Navigation error: $e")),
+                      );
+                    }
+                  },
+                  child: const Text("Continue"),
                 ),
-              ),
+                const SizedBox(height: 10),
+
+                OutlinedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const LenderDashboardScreen(
+                          lenderName: "Demo Lender",
+                          email: "demo@example.com",
+                          phone: "1234567890",
+                          investmentCapacity: "PKR 1,000,000",
+                          riskAppetite: "Medium",
+                        ),
+                      ),
+                    );
+                  },
+                  child: const Text("Continue (Lender Dashboard)"),
+                ),
+                const SizedBox(height: 10),
+
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("Back"),
+                ),
+              ],
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }

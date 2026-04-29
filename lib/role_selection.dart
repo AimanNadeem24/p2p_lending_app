@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'borrower_profile.dart';
+import 'personal_info.dart'; // ✅ start with PersonalInfoScreen
 import 'borrower_data.dart';
 
 class RoleSelectionScreen extends StatelessWidget {
@@ -22,23 +22,17 @@ class RoleSelectionScreen extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: Color.fromARGB(255, 255, 255, 255),
+                color: Colors.white,
               ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 40),
 
-            // Borrower button → final borrower profile screen
+            // Borrower button → start flow with PersonalInfoScreen
             OutlinedButton(
               style: OutlinedButton.styleFrom(
-                side: const BorderSide(
-                  color: Color.fromARGB(255, 255, 255, 255),
-                  width: 2,
-                ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 50,
-                  vertical: 20,
-                ),
+                side: const BorderSide(color: Colors.white, width: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
               ),
               onPressed: () async {
                 await _setLoginState('borrower');
@@ -46,21 +40,8 @@ class RoleSelectionScreen extends StatelessWidget {
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => BorrowerProfileScreen(
-                        borrower: BorrowerData(
-                          fullName: userName,
-                          cnic: '42201-1234567-8',
-                          city: 'Karachi',
-                          employmentType: 'Salaried',
-                          annualIncome: 1450000,
-                          monthlyObligations: 22000,
-                          homeOwnership: 'Rented',
-                          employmentLength: 4,
-                          creditScore: 720,
-                          loanAmount: 320000,
-                          loanPurpose: 'Home repairs',
-                          loanTerm: 24,
-                        ),
+                      builder: (context) => PersonalInfoScreen(
+                        userName: userName,
                       ),
                     ),
                   );
@@ -71,7 +52,7 @@ class RoleSelectionScreen extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Color.fromARGB(255, 255, 255, 255),
+                  color: Colors.white,
                 ),
               ),
             ),
@@ -81,14 +62,8 @@ class RoleSelectionScreen extends StatelessWidget {
             // Lender button → Lender route
             OutlinedButton(
               style: OutlinedButton.styleFrom(
-                side: const BorderSide(
-                  color: Color.fromARGB(255, 255, 255, 255),
-                  width: 2,
-                ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 50,
-                  vertical: 20,
-                ),
+                side: const BorderSide(color: Colors.white, width: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
               ),
               onPressed: () async {
                 await _setLoginState('lender');
@@ -101,7 +76,7 @@ class RoleSelectionScreen extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Color.fromARGB(255, 255, 255, 255),
+                  color: Colors.white,
                 ),
               ),
             ),

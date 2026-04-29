@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'splash.dart';
 import 'login.dart';
 import 'signup.dart';
-import 'borrower_dashboard.dart';
 import 'borrower_home.dart';
 import 'borrower_profile.dart';
 import 'missing_info.dart';
@@ -16,9 +15,9 @@ import 'lender_dashboard.dart';
 import 'lender_infoform.dart';
 
 final _defaultBorrower = BorrowerData(
-  fullName: 'Amina Khan',
-  cnic: '42201-1234567-8',
-  city: 'Karachi',
+  fullName: 'Khadija',
+  cnic: '54400-3187242-0',
+  city: 'Quetta',
   employmentType: 'Salaried',
   annualIncome: 1450000,
   monthlyObligations: 22000,
@@ -42,13 +41,11 @@ class P2PLendingApp extends StatefulWidget {
 }
 
 class _P2PLendingAppState extends State<P2PLendingApp> {
-  // ❌ Removed all settings-related state variables
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'P2P Lending App',
-      theme: darkBlueTheme, // ✅ fixed theme (no toggle)
+      theme: darkBlueTheme,
       debugShowCheckedModeBanner: false,
       initialRoute: '/',
       routes: {
@@ -57,13 +54,16 @@ class _P2PLendingAppState extends State<P2PLendingApp> {
         '/signup': (context) => const SignupScreen(),
         '/borrower': (context) =>
             BorrowerProfileScreen(borrower: _defaultBorrower),
-
         '/lender': (context) => const LenderInfoFormScreen(),
-
-        '/personalInfo': (context) => const PersonalInfoScreen(),
       },
       onGenerateRoute: (settings) {
         switch (settings.name) {
+          case '/personalInfo':
+            final userName = settings.arguments as String;
+            return MaterialPageRoute(
+              builder: (_) => PersonalInfoScreen(userName: userName),
+            );
+
           case '/borrowerHome':
             final borrower = settings.arguments as BorrowerData;
             return MaterialPageRoute(
@@ -96,18 +96,16 @@ class _P2PLendingAppState extends State<P2PLendingApp> {
                 loanAmount:
                     int.tryParse(args['loanAmount']?.toString() ?? "0") ?? 0,
                 interestRate:
-                    double.tryParse(
-                      args['interestRate']?.toString() ?? "0.0",
-                    ) ??
-                    0.0,
+                    double.tryParse(args['interestRate']?.toString() ?? "0.0") ??
+                        0.0,
                 loanGrade: args['loanGrade'] ?? "-",
                 status: args['status'] ?? "Unknown",
                 repaymentSchedule:
                     (args['repaymentSchedule'] as List<Map<String, String>>?) ??
-                    [],
+                        [],
                 repaymentHistory:
                     (args['repaymentHistory'] as List<Map<String, String>>?) ??
-                    [],
+                        [],
               ),
             );
 

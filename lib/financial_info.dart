@@ -77,35 +77,31 @@ class _FinancialInfoScreenState extends State<FinancialInfoScreen> {
                   ),
                   const SizedBox(height: 16),
 
-                  // Monthly Obligations
-                  TextFormField(
-                    controller: _obligationsController,
-                    decoration: InputDecoration(
-                      labelText: "Monthly Obligations (PKR)",
-
-                      prefixStyle: const TextStyle(
-                        color: Color(0xFF1E3A8A),
-                        fontWeight: FontWeight.bold,
-                      ),
-                      prefixIcon: const Icon(
-                        Icons.money_off,
-                        color: Color(0xFF1E3A8A),
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(
-                          color: Color(0xFF1E3A8A),
-                          width: 2,
-                        ),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    keyboardType: TextInputType.number,
-                    validator: (v) => v!.isEmpty ? "Required" : null,
-                  ),
-                  const SizedBox(height: 16),
+                 // Monthly Obligations
+TextFormField(
+  controller: _obligationsController,
+  decoration: InputDecoration(
+    labelText: "Monthly Obligations (PKR)", // ✅ updated label
+    prefixText: "PKR ",                     // ✅ shows PKR instead of icon
+    prefixStyle: const TextStyle(
+      color: Color(0xFF1E3A8A),
+      fontWeight: FontWeight.bold,
+    ),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderSide: const BorderSide(
+        color: Color(0xFF1E3A8A),
+        width: 2,
+      ),
+      borderRadius: BorderRadius.circular(8),
+    ),
+  ),
+  keyboardType: TextInputType.number,
+  validator: (v) => v!.isEmpty ? "Required" : null,
+),
+const SizedBox(height: 16),
 
                   // Home Ownership
                   DropdownButtonFormField<String>(
@@ -135,9 +131,10 @@ class _FinancialInfoScreenState extends State<FinancialInfoScreen> {
                     controller: _employmentLengthController,
                     decoration: InputDecoration(
                       labelText: "Employment Length (years)",
-                      prefixIcon: const Icon(
-                        Icons.work_history,
+                      prefixText: "Years ", // ✅ shows "Years" instead of icon
+                      prefixStyle: const TextStyle(
                         color: Color(0xFF1E3A8A),
+                        fontWeight: FontWeight.bold,
                       ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),

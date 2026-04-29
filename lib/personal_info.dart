@@ -4,7 +4,10 @@ import 'financial_info.dart';
 import 'borrower_data.dart';
 
 class PersonalInfoScreen extends StatefulWidget {
-  const PersonalInfoScreen({super.key});
+  // ✅ Added: accept userName (because main.dart / role_selection.dart pass it)
+  final String? userName;
+
+  const PersonalInfoScreen({super.key, this.userName});
 
   @override
   State<PersonalInfoScreen> createState() => _PersonalInfoScreenState();
@@ -18,12 +21,30 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
   String? _employmentType;
 
   @override
+  void initState() {
+    super.initState();
+    // ✅ Optional: if userName was provided earlier, pre-fill the Full Name field
+    if (widget.userName != null && widget.userName!.trim().isNotEmpty) {
+      _nameController.text = widget.userName!.trim();
+    }
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _cnicController.dispose();
+    _cityController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white, // ✅ white background
       appBar: AppBar(
         title: const Text("Personal Information"),
         backgroundColor: const Color(0xFF1E3A8A), // dark blue
+        foregroundColor: Colors.white,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -68,7 +89,9 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    validator: (v) => v!.isEmpty ? "Full name required" : null,
+                    validator: (v) => (v == null || v.isEmpty)
+                        ? "Full name required"
+                        : null,
                   ),
                   const SizedBox(height: 16),
 
@@ -99,7 +122,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                       _CNICInputFormatter(),
                     ],
                     validator: (v) {
-                      if (v!.isEmpty) return "CNIC required";
+                      if (v == null || v.isEmpty) return "CNIC required";
                       if (v.length != 15) {
                         return "CNIC must be in format #####-#######-#";
                       }
@@ -128,7 +151,8 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    validator: (v) => v!.isEmpty ? "City required" : null,
+                    validator: (v) =>
+                        (v == null || v.isEmpty) ? "City required" : null,
                   ),
                   const SizedBox(height: 16),
 
@@ -175,6 +199,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF1E3A8A),
+                        foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
